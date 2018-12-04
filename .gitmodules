@@ -1,0 +1,3 @@
+[submodule "chromite"]
+	path = chromite
+	url = https://chromium.googlesource.com/chromiumos/chromite
