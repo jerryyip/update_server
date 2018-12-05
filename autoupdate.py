@@ -141,6 +141,36 @@ class UpdateMetadata(object):
     self.metadata_hash = metadata_hash
 
 
+
+class XBuddy(object):
+    """Class that manages image retrieval and caching by the devserver.
+
+  Image retrieval by xBuddy path:
+    XBuddy accesses images and artifacts that it stores using an xBuddy
+    path of the form: board/version/alias
+    The primary xbuddy.Get call retrieves the correct artifact or url to where
+    the artifacts can be found.
+
+  Image caching:
+    Images and other artifacts are stored identically to how they would have
+    been if devserver's stage rpc was called and the xBuddy cache replaces
+    build versions on a LRU basis. Timestamps are maintained by last accessed
+    times of representative files in the a directory in the static serve
+    directory (XBUDDY_TIMESTAMP_DIR).
+  """
+def __init__(self):
+  pass
+
+def Get(self, path_list, image_dir=None):
+  build_id = ""
+  file_name = ""
+  return build_id, file_name
+
+def Translate(self, path_list, board=None, version=None, image_dir=None):
+  build_id = ""
+  file_name = ""
+  return build_id, file_name
+
 class Autoupdate(build_util.BuildObject):
   """Class that contains functionality that handles Chrome OS update pings.
 
@@ -180,7 +210,7 @@ class Autoupdate(build_util.BuildObject):
                critical_update=False, remote_payload=False, max_updates=-1,
                host_log=False, *args, **kwargs):
     super(Autoupdate, self).__init__(*args, **kwargs)
-    self.xbuddy = None
+    self.xbuddy = XBuddy()
     self.urlbase = urlbase or None
     self.forced_image = forced_image
     self.payload_path = payload_path
@@ -313,6 +343,7 @@ class Autoupdate(build_util.BuildObject):
 
     update_command = [
         'cros_generate_update_payload',
+        '--outside_chroot',
         '--image', image_path,
         '--out_metadata_hash_file', os.path.join(output_dir,
                                                  constants.METADATA_HASH_FILE),
@@ -392,7 +423,7 @@ class Autoupdate(build_util.BuildObject):
 
     try:
       self.GenerateUpdateFile(self.src_image, image_path, output_dir)
-      self.GenerateStatefulFile(image_path, output_dir)
+      #self.GenerateStatefulFile(image_path, output_dir)
     except subprocess.CalledProcessError:
       os.system('rm -rf "%s"' % output_dir)
       raise AutoupdateError('Failed to generate update in %s' % output_dir)
@@ -785,6 +816,7 @@ class Autoupdate(build_util.BuildObject):
       path_to_payload = self.GetUpdateForLabel(client_version, label)
     #TODO(joychen): deprecate --image flag
     elif self.forced_image:
+      print(self.forced_image)
       if self.forced_image.startswith('xbuddy:'):
         # This is trying to use an xbuddy path in place of a path to an image.
         xbuddy_label = self.forced_image.split(':')[1]
@@ -795,7 +827,7 @@ class Autoupdate(build_util.BuildObject):
         self.GetPathToPayload(xbuddy_label, client_version, board)
       else:
         src_path = os.path.abspath(self.forced_image)
-        if os.path.exists(src_path) and common_util.IsInsideChroot():
+        if os.path.exists(src_path) :
           # Image was found for the given label. Generate update if we can.
           path_to_payload = self.GenerateUpdateImageWithCache(src_path)
           # Add links from the static directory to the update.
