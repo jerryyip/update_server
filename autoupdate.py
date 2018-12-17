@@ -755,7 +755,7 @@ class Autoupdate(build_util.BuildObject):
     hostname = self.GetDevserverUrl()
 
     if self.urlbase:
-      static_urlbase = self.urlbase
+      static_urlbase = '%s/static' % self.urlbase
     else:
       static_urlbase = '%s/static' % hostname
 
